@@ -19,5 +19,5 @@ def index():
 def health_check():
     return {
         "status": "ok",
-        "date": datetime.now()
+        "timestamp": datetime.now()
     }, 200
