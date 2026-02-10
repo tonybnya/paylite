@@ -111,7 +111,11 @@ def update_user(user_id):
 # DELETE - DELETE
 @users_bp.route("<string:user_id>", methods=["DELETE"])
 def delete_user(user_id):
-    user = User.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    return make_response(data={"message": "User deleted"}, status=200)
+    try:
+        user = User.query.get_or_404(user_id)
+        db.session.delete(user)
+        db.session.commit()
+        return make_response(data={"message": "User deleted"}, status=200)
+    except Exception as e:
+        db.session.rollback()
+        return make_response(error=str(e), status=400)

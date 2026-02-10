@@ -31,7 +31,7 @@ class User(db.Model):
             "firstname": self.firstname,
             "lastname": self.lastname,
             "username": self.username,
-            "email": self.email
+            "email": self.email,
         }
 
     def __str__(self):
@@ -61,7 +61,9 @@ class Wallet(db.Model):
     )
 
     # Relationship: One Wallet -> Many Transactions
-    transactions = db.relationship("Transaction", backref="wallet", lazy=True)
+    transactions = db.relationship(
+        "Transaction", backref="wallet", lazy=True, cascade="all, delete-orphan"
+    )
 
     # Constraint: Balance can't be negative
     __table_args__ = (
