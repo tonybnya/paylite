@@ -24,12 +24,12 @@ def create_app(config_name="dev"):
     from .routes import core_bp
     from users.routes import users_bp
     from wallets.routes import wallets_bp
-    from transactions.routes import transactions_bp
+    from transactions.routes import tx_bp
 
     app.register_blueprint(core_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(wallets_bp)
-    app.register_blueprint(transactions_bp)
+    app.register_blueprint(tx_bp)
 
 
     # global error handler for 404

@@ -10,10 +10,10 @@ from utils import make_response
 from core import db
 from decimal import Decimal
 
-transactions_bp = Blueprint('transaction', __name__, url_prefix='/transactions')
+tx_bp = Blueprint('transaction', __name__, url_prefix='/transactions')
 
 
-@transactions_bp.route('/deposit', methods=['POST'])
+@tx_bp.route('/deposit', methods=['POST'])
 def deposit():
     """Deposit money into a wallet."""
     data = request.get_json()
@@ -58,7 +58,7 @@ def deposit():
         return make_response(error=str(e), status=400)
 
 
-@transactions_bp.route('/withdraw', methods=['POST'])
+@tx_bp.route('/withdraw', methods=['POST'])
 def withdraw():
     """Withdraw money from a wallet."""
     data = request.get_json()
@@ -107,7 +107,7 @@ def withdraw():
         return make_response(error=str(e), status=400)
 
 
-@transactions_bp.route('/transfer', methods=['POST'])
+@tx_bp.route('/transfer', methods=['POST'])
 def transfer():
     """Transfer money between wallets."""
     data = request.get_json()
@@ -170,7 +170,7 @@ def transfer():
         return make_response(error=str(e), status=400)
 
 
-@transactions_bp.route('/<string:user_id>', methods=['GET'])
+@tx_bp.route('/<string:user_id>', methods=['GET'])
 def get_user_transactions(user_id):
     """Get all transactions for a user's wallet."""
     wallet = Wallet.query.filter_by(user_id=user_id).first_or_404()
