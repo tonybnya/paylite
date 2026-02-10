@@ -7,7 +7,7 @@ Author      : @tonybnya
 from flask import Blueprint, request # type: ignore
 from .models import User
 from core import db
-from utils import make_response, hash_password
+from utils import make_response
 from sqlalchemy.exc import IntegrityError # type: ignore
 
 users_bp = Blueprint("user", __name__, url_prefix="/users")
