@@ -8,6 +8,7 @@ from flask import Blueprint, request
 from .models import User
 from core import db
 from utils import make_response, hash_password
+from sqlalchemy.exc import IntegrityError
 
 users_bp = Blueprint("user", __name__, url_prefix="/users")
 
@@ -32,17 +33,40 @@ def create_user():
             error="Password must be at least 8 characters long", status=400
         )
 
-    new_user = User(
-        username=data["username"],
-        email=data["email"],
-        firstname=data["firstname"],
-        lastname=data["lastname"],
-    )
-    new_user.set_password(password)
-    db.session.add(new_user)
-    db.session.commit()
+    # Check for existing username
+    existing_username_user = User.query.filter_by(username=data["username"]).first()
+    if existing_username_user:
+        return make_response(
+            error="Username already exists",
+            status=409,  # Conflict status code
+        )
 
-    return make_response(data=new_user.to_dict(), status=201)
+    # Check for existing email
+    existing_email_user = User.query.filter_by(email=data["email"]).first()
+    if existing_email_user:
+        return make_response(
+            error="Email already exists",
+            status=409,  # Conflict status code
+        )
+
+    try:
+        new_user = User(
+            username=data["username"],
+            email=data["email"],
+            firstname=data["firstname"],
+            lastname=data["lastname"],
+        )
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return make_response(data=new_user.to_dict(), status=201)
+    except IntegrityError:
+        db.session.rollback()
+        return make_response(error="Username or email already exists", status=409)
+    except Exception as e:
+        db.session.rollback()
+        return make_response(error=str(e), status=400)
 
 
 # READ ALL - GET
