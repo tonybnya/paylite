@@ -96,6 +96,13 @@ def read_users():
     )
 
 
+# READ ALL - GET (No pagination)
+@users_bp.route("/all", methods=["GET"])
+def read_all_users():
+    users = User.query.order_by(User.created_at.desc()).all()
+    return make_response(data=[user.to_dict() for user in users], count=len(users))
+
+
 # READ ONE - GET
 @users_bp.route("/<string:user_id>", methods=["GET"])
 def read_user(user_id):

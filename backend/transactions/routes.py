@@ -162,6 +162,25 @@ def transfer():
         return make_response(error=str(e), status=400)
 
 
+@tx_bp.route("/all", methods=["GET"])
+def get_all_transactions():
+    """Get all transactions globally."""
+    transactions = Transaction.query.order_by(Transaction.created_at.desc()).all()
+    return make_response(
+        data=[
+            {
+                "id": tx.id,
+                "wallet_id": tx.wallet_id,
+                "amount": float(tx.amount),
+                "type": tx.transaction_type,
+                "created_at": tx.created_at.isoformat(),
+            }
+            for tx in transactions
+        ],
+        count=len(transactions),
+    )
+
+
 @tx_bp.route("/<string:user_id>", methods=["GET"])
 def get_user_transactions(user_id):
     """Get all transactions for a user's wallet."""
@@ -203,4 +222,48 @@ def get_user_transactions(user_id):
             "total_pages": pagination.pages,
         },
         status=200,
+    )
+
+
+@tx_bp.route("/<string:user_id>/all", methods=["GET"])
+def get_user_all_transactions(user_id):
+    """Get all transactions for a user's wallet without pagination."""
+    wallet = Wallet.query.filter_by(user_id=user_id).first_or_404()
+    transactions = (
+        Transaction.query.filter_by(wallet_id=wallet.id)
+        .order_by(Transaction.created_at.desc())
+        .all()
+    )
+
+    return make_response(
+        data={
+            "wallet_id": wallet.id,
+            "current_balance": float(wallet.balance),
+            "transactions": [
+                {
+                    "id": tx.id,
+                    "amount": float(tx.amount),
+                    "type": tx.transaction_type,
+                    "created_at": tx.created_at.isoformat(),
+                }
+                for tx in transactions
+            ],
+        },
+        count=len(transactions),
+    )
+
+    return make_response(
+        data={
+            "wallet_id": wallet.id,
+            "current_balance": float(wallet.balance),
+            "transactions": [
+                {
+                    "id": tx.id,
+                    "amount": float(tx.amount),
+                    "type": tx.transaction_type,
+                    "created_at": tx.created_at.isoformat(),
+                }
+                for tx in transactions
+            ],
+        },
     )
