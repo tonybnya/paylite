@@ -10,20 +10,20 @@ from utils import make_response
 from core import db
 from decimal import Decimal
 
-tx_bp = Blueprint('transaction', __name__, url_prefix='/transactions')
+tx_bp = Blueprint("transaction", __name__, url_prefix="/transactions")
 
 
-@tx_bp.route('/deposit', methods=['POST'])
+@tx_bp.route("/deposit", methods=["POST"])
 def deposit():
     """Deposit money into a wallet."""
     data = request.get_json()
 
     # validation
-    if not data or 'user_id' not in data or 'amount' not in data:
+    if not data or "user_id" not in data or "amount" not in data:
         return make_response(error="Missing required fields", status=400)
 
     try:
-        amount = Decimal(str(data['amount']))
+        amount = Decimal(str(data["amount"]))
         if amount <= 0:
             return make_response(error="Amount must be positive", status=400)
     except (ValueError, TypeError):
@@ -37,9 +37,7 @@ def deposit():
 
         # Log Transaction
         new_tx = Transaction(
-            wallet_id=wallet.id,
-            amount=amount,
-            transaction_type='DEPOSIT'
+            wallet_id=wallet.id, amount=amount, transaction_type="DEPOSIT"
         )
 
         db.session.add(new_tx)
@@ -49,22 +47,22 @@ def deposit():
             data={
                 "transaction_id": new_tx.id,
                 "new_balance": float(wallet.balance),
-                "amount_deposited": float(amount)
+                "amount_deposited": float(amount),
             },
-            status=201
+            status=201,
         )
     except Exception as e:
         db.session.rollback()
         return make_response(error=str(e), status=400)
 
 
-@tx_bp.route('/withdraw', methods=['POST'])
+@tx_bp.route("/withdraw", methods=["POST"])
 def withdraw():
     """Withdraw money from a wallet."""
     data = request.get_json()
 
     # validation
-    if not data or 'user_id' not in data or 'amount' not in data:
+    if not data or "user_id" not in data or "amount" not in data:
         return make_response(error="Missing required fields", status=400)
 
     try:
@@ -86,9 +84,7 @@ def withdraw():
 
         # Log Transaction
         new_tx = Transaction(
-            wallet_id=wallet.id,
-            amount=amount,
-            transaction_type='WITHDRAWAL'
+            wallet_id=wallet.id, amount=amount, transaction_type="WITHDRAWAL"
         )
 
         db.session.add(new_tx)
@@ -98,26 +94,26 @@ def withdraw():
             data={
                 "transaction_id": new_tx.id,
                 "new_balance": float(wallet.balance),
-                "amount_withdrawn": float(amount)
+                "amount_withdrawn": float(amount),
             },
-            status=201
+            status=201,
         )
     except Exception as e:
         db.session.rollback()
         return make_response(error=str(e), status=400)
 
 
-@tx_bp.route('/transfer', methods=['POST'])
+@tx_bp.route("/transfer", methods=["POST"])
 def transfer():
     """Transfer money between wallets."""
     data = request.get_json()
 
     # validation
-    required_fields = ['from_user_id', 'to_user_id', 'amount']
+    required_fields = ["from_user_id", "to_user_id", "amount"]
     if not data or not all(field in data for field in required_fields):
         return make_response(error="Missing required fields", status=400)
 
-    if data['from_user_id'] == data['to_user_id']:
+    if data["from_user_id"] == data["to_user_id"]:
         return make_response(error="Cannot transfer to same wallet", status=400)
 
     try:
@@ -142,14 +138,10 @@ def transfer():
 
         # Log both transactions
         transfer_out = Transaction(
-            wallet_id=from_wallet.id,
-            amount=amount,
-            transaction_type='TRANSFER_OUT'
+            wallet_id=from_wallet.id, amount=amount, transaction_type="TRANSFER_OUT"
         )
         transfer_in = Transaction(
-            wallet_id=to_wallet.id,
-            amount=amount,
-            transaction_type='TRANSFER_IN'
+            wallet_id=to_wallet.id, amount=amount, transaction_type="TRANSFER_IN"
         )
 
         db.session.add(transfer_out)
@@ -162,7 +154,7 @@ def transfer():
                 "transfer_in_id": transfer_in.id,
                 "amount_transferred": float(amount),
                 "from_wallet_balance": float(from_wallet.balance),
-                "to_wallet_balance": float(to_wallet.balance)
+                "to_wallet_balance": float(to_wallet.balance),
             }
         )
     except Exception as e:
@@ -170,14 +162,24 @@ def transfer():
         return make_response(error=str(e), status=400)
 
 
-@tx_bp.route('/<string:user_id>', methods=['GET'])
+@tx_bp.route("/<string:user_id>", methods=["GET"])
 def get_user_transactions(user_id):
     """Get all transactions for a user's wallet."""
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 20, type=int)
+
+    if page < 1:
+        return make_response(error="Page must be >= 1", status=400)
+    if per_page < 1 or per_page > 100:
+        return make_response(error="per_page must be between 1 and 100", status=400)
+
     wallet = Wallet.query.filter_by(user_id=user_id).first_or_404()
 
-    transactions = Transaction.query.filter_by(wallet_id=wallet.id)\
-        .order_by(Transaction.created_at.desc())\
-        .all()
+    pagination = (
+        Transaction.query.filter_by(wallet_id=wallet.id)
+        .order_by(Transaction.created_at.desc())
+        .paginate(page=page, per_page=per_page, error_out=False)
+    )
 
     return make_response(
         data={
@@ -188,11 +190,17 @@ def get_user_transactions(user_id):
                     "id": tx.id,
                     "amount": float(tx.amount),
                     "type": tx.transaction_type,
-                    "created_at": tx.created_at.isoformat()
+                    "created_at": tx.created_at.isoformat(),
                 }
-                for tx in transactions
+                for tx in pagination.items
             ],
-            "count": len(transactions)
         },
-        status=200
+        count=len(pagination.items),
+        pagination={
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "total_pages": pagination.pages,
+        },
+        status=200,
     )

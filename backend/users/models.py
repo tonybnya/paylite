@@ -33,6 +33,13 @@ class User(db.Model):
             "lastname": self.lastname,
             "username": self.username,
             "email": self.email,
+            "wallet": {
+                "id": self.wallet.id,
+                "balance": float(self.wallet.balance),
+                "currency": self.wallet.currency,
+            }
+            if self.wallet
+            else None,
         }
 
     def __repr__(self):
