@@ -19,6 +19,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationship: One User -> One Wallet
     wallet = db.relationship(
@@ -34,7 +35,7 @@ class User(db.Model):
             "email": self.email,
         }
 
-    def __str__(self):
+    def __repr__(self):
         return f"<User {self.firstname} {self.lastname} ({self.username})>"
 
     def set_password(self, password):
@@ -54,6 +55,7 @@ class Wallet(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     balance = db.Column(db.Numeric(20, 2), default=0.00, nullable=False)
     currency = db.Column(db.String(3), default="XAF", nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Foreign Key
     user_id = db.Column(
@@ -70,6 +72,9 @@ class Wallet(db.Model):
         db.CheckConstraint("balance >= 0", name="check_balance_non_negative"),
     )
 
+    def __repr__(self):
+        return f"<Wallet user={self.user_id} balance={self.balance}>"
+
 
 class Transaction(db.Model):
     __tablename__ = "transactions"
@@ -82,3 +87,6 @@ class Transaction(db.Model):
 
     # Foreign Key
     wallet_id = db.Column(db.String(36), db.ForeignKey("wallets.id"), nullable=False)
+
+    def __repr__(self):
+        return f"<Transaction {self.id} {self.amount}>"
