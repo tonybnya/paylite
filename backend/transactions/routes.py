@@ -12,6 +12,8 @@ from decimal import Decimal
 
 tx_bp = Blueprint("transaction", __name__, url_prefix="/transactions")
 
+VALID_TRANSACTION_TYPES = ["DEPOSIT", "WITHDRAWAL", "TRANSFER_IN", "TRANSFER_OUT"]
+
 
 @tx_bp.route("/deposit", methods=["POST"])
 def deposit():
@@ -165,7 +167,19 @@ def transfer():
 @tx_bp.route("/all", methods=["GET"])
 def get_all_transactions():
     """Get all transactions globally."""
-    transactions = Transaction.query.order_by(Transaction.created_at.desc()).all()
+    tx_type = request.args.get("type")
+
+    if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
+        return make_response(
+            error=f"Invalid transaction type. Valid types: {', '.join(VALID_TRANSACTION_TYPES)}",
+            status=400,
+        )
+
+    query = Transaction.query
+    if tx_type:
+        query = query.filter_by(transaction_type=tx_type)
+
+    transactions = query.order_by(Transaction.created_at.desc()).all()
     return make_response(
         data=[
             {
@@ -186,18 +200,27 @@ def get_user_transactions(user_id):
     """Get all transactions for a user's wallet."""
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
+    tx_type = request.args.get("type")
 
     if page < 1:
         return make_response(error="Page must be >= 1", status=400)
     if per_page < 1 or per_page > 100:
         return make_response(error="per_page must be between 1 and 100", status=400)
 
+    if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
+        return make_response(
+            error=f"Invalid transaction type. Valid types: {', '.join(VALID_TRANSACTION_TYPES)}",
+            status=400,
+        )
+
     wallet = Wallet.query.filter_by(user_id=user_id).first_or_404()
 
-    pagination = (
-        Transaction.query.filter_by(wallet_id=wallet.id)
-        .order_by(Transaction.created_at.desc())
-        .paginate(page=page, per_page=per_page, error_out=False)
+    query = Transaction.query.filter_by(wallet_id=wallet.id)
+    if tx_type:
+        query = query.filter_by(transaction_type=tx_type)
+
+    pagination = query.order_by(Transaction.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
     )
 
     return make_response(
@@ -228,12 +251,21 @@ def get_user_transactions(user_id):
 @tx_bp.route("/<string:user_id>/all", methods=["GET"])
 def get_user_all_transactions(user_id):
     """Get all transactions for a user's wallet without pagination."""
+    tx_type = request.args.get("type")
+
+    if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
+        return make_response(
+            error=f"Invalid transaction type. Valid types: {', '.join(VALID_TRANSACTION_TYPES)}",
+            status=400,
+        )
+
     wallet = Wallet.query.filter_by(user_id=user_id).first_or_404()
-    transactions = (
-        Transaction.query.filter_by(wallet_id=wallet.id)
-        .order_by(Transaction.created_at.desc())
-        .all()
-    )
+
+    query = Transaction.query.filter_by(wallet_id=wallet.id)
+    if tx_type:
+        query = query.filter_by(transaction_type=tx_type)
+
+    transactions = query.order_by(Transaction.created_at.desc()).all()
 
     return make_response(
         data={
@@ -250,20 +282,4 @@ def get_user_all_transactions(user_id):
             ],
         },
         count=len(transactions),
-    )
-
-    return make_response(
-        data={
-            "wallet_id": wallet.id,
-            "current_balance": float(wallet.balance),
-            "transactions": [
-                {
-                    "id": tx.id,
-                    "amount": float(tx.amount),
-                    "type": tx.transaction_type,
-                    "created_at": tx.created_at.isoformat(),
-                }
-                for tx in transactions
-            ],
-        },
     )
