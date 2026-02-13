@@ -6,6 +6,7 @@ Author      : @tonybnya
 
 import sys
 import random
+from datetime import datetime, timezone
 from faker import Faker
 from sqlalchemy.exc import IntegrityError
 from core import create_app, db
@@ -56,21 +57,29 @@ def seed_db(count=10):
                     hashed_password = hash_password(password)
 
                     # 1. Create User
+                    user_created_at = fake.date_time_between(
+                        start_date="-1y", end_date="now", tzinfo=timezone.utc
+                    )
                     user = User(
                         username=username,
                         email=email,
                         firstname=firstname,
                         lastname=lastname,
                         password_hash=hashed_password,
+                        created_at=user_created_at,
                     )
                     db.session.add(user)
                     db.session.flush()
 
                     # 2. Create Wallet
+                    wallet_created_at = fake.date_time_between(
+                        start_date=user_created_at, end_date="now", tzinfo=timezone.utc
+                    )
                     wallet = Wallet(
                         user_id=user.id,
                         balance=round(random.uniform(500, 5000), 2),
                         currency="XAF",
+                        created_at=wallet_created_at,
                     )
                     db.session.add(wallet)
                     db.session.flush()
@@ -81,8 +90,16 @@ def seed_db(count=10):
                             ["DEPOSIT", "WITHDRAWAL", "TRANSFER_OUT", "TRANSFER_IN"]
                         )
                         amount = round(random.uniform(10, 100), 2)
+                        tx_created_at = fake.date_time_between(
+                            start_date=wallet_created_at,
+                            end_date="now",
+                            tzinfo=timezone.utc,
+                        )
                         tx = Transaction(
-                            wallet_id=wallet.id, amount=amount, transaction_type=tx_type
+                            wallet_id=wallet.id,
+                            amount=amount,
+                            transaction_type=tx_type,
+                            created_at=tx_created_at,
                         )
                         db.session.add(tx)
 
