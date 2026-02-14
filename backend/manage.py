@@ -22,9 +22,38 @@ def seed_db(count=10):
     with app.app_context():
         print(f"🌱 Seeding {count} users...")
 
-        fake.unique.clear()  # Reset Faker's unique tracker
+        fake.unique.clear()
         created_count = 0
         max_retries = 3
+
+        # Create admin user first
+        try:
+            admin = User(
+                username="admin",
+                email="admin@paylite.com",
+                firstname="Admin",
+                lastname="User",
+                password_hash=hash_password("admin123"),
+                is_active=True,
+                is_admin=True,
+                created_at=datetime.now(timezone.utc),
+            )
+            db.session.add(admin)
+            db.session.flush()
+
+            admin_wallet = Wallet(
+                user_id=admin.id,
+                balance=10000.00,
+                currency="XAF",
+                created_at=datetime.now(timezone.utc),
+            )
+            db.session.add(admin_wallet)
+            db.session.commit()
+            print("  ✓ Admin user created (admin@paylite.com / admin123)")
+            created_count += 1
+        except IntegrityError:
+            db.session.rollback()
+            print("  ⚠ Admin user already exists")
 
         for i in range(count):
             retry_count = 0
@@ -32,21 +61,18 @@ def seed_db(count=10):
 
             while retry_count < max_retries and not user_created:
                 try:
-                    # Use unique generator with fallback
                     if retry_count == 0:
                         username = fake.unique.user_name()
                         email = fake.unique.email()
                         firstname = fake.first_name()
                         lastname = fake.last_name()
                     else:
-                        # Add timestamp/random suffix on retry
                         base_username = fake.user_name()
                         username = f"{base_username}_{random.randint(1000, 9999)}"
                         email = f"{fake.user_name()}_{random.randint(1000, 9999)}@example.com"
                         firstname = fake.first_name()
                         lastname = fake.last_name()
 
-                    # Generate a random password and hash it
                     password = fake.password(
                         length=12,
                         special_chars=True,
@@ -56,7 +82,6 @@ def seed_db(count=10):
                     )
                     hashed_password = hash_password(password)
 
-                    # 1. Create User
                     user_created_at = fake.date_time_between(
                         start_date="-1y", end_date="now", tzinfo=timezone.utc
                     )
@@ -66,12 +91,13 @@ def seed_db(count=10):
                         firstname=firstname,
                         lastname=lastname,
                         password_hash=hashed_password,
+                        is_active=True,
+                        is_admin=False,
                         created_at=user_created_at,
                     )
                     db.session.add(user)
                     db.session.flush()
 
-                    # 2. Create Wallet
                     wallet_created_at = fake.date_time_between(
                         start_date=user_created_at, end_date="now", tzinfo=timezone.utc
                     )
@@ -84,7 +110,6 @@ def seed_db(count=10):
                     db.session.add(wallet)
                     db.session.flush()
 
-                    # 3. Create transactions
                     for _ in range(random.randint(1, 5)):
                         tx_type = random.choice(
                             ["DEPOSIT", "WITHDRAWAL", "TRANSFER_OUT", "TRANSFER_IN"]
