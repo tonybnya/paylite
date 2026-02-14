@@ -19,6 +19,8 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationship: One User -> One Wallet
@@ -33,6 +35,8 @@ class User(db.Model):
             "lastname": self.lastname,
             "username": self.username,
             "email": self.email,
+            "is_active": self.is_active,
+            "is_admin": self.is_admin,
             "wallet": {
                 "id": self.wallet.id,
                 "balance": float(self.wallet.balance),

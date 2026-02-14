@@ -5,7 +5,8 @@ Author      : @tonybnya
 """
 
 from flask import Blueprint, request
-from users.models import Wallet, Transaction
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from users.models import Wallet, Transaction, User
 from utils import make_response
 from core import db
 from decimal import Decimal
@@ -16,12 +17,14 @@ VALID_TRANSACTION_TYPES = ["DEPOSIT", "WITHDRAWAL", "TRANSFER_IN", "TRANSFER_OUT
 
 
 @tx_bp.route("/deposit", methods=["POST"])
+@jwt_required()
 def deposit():
     """Deposit money into a wallet."""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
     data = request.get_json()
 
-    # validation
-    if not data or "user_id" not in data or "amount" not in data:
+    if not data or "amount" not in data:
         return make_response(error="Missing required fields", status=400)
 
     try:
@@ -31,13 +34,15 @@ def deposit():
     except (ValueError, TypeError):
         return make_response(error="Invalid amount", status=400)
 
-    wallet = Wallet.query.filter_by(user_id=data["user_id"]).first_or_404()
+    if not current_user.is_admin and "user_id" in data:
+        return make_response(error="Cannot deposit to other users", status=403)
+
+    target_user_id = data.get("user_id", current_user_id)
+    wallet = Wallet.query.filter_by(user_id=target_user_id).first_or_404()
 
     try:
-        # Business Logic: Increase balance
         wallet.balance += amount
 
-        # Log Transaction
         new_tx = Transaction(
             wallet_id=wallet.id, amount=amount, transaction_type="DEPOSIT"
         )
@@ -59,12 +64,14 @@ def deposit():
 
 
 @tx_bp.route("/withdraw", methods=["POST"])
+@jwt_required()
 def withdraw():
     """Withdraw money from a wallet."""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
     data = request.get_json()
 
-    # validation
-    if not data or "user_id" not in data or "amount" not in data:
+    if not data or "amount" not in data:
         return make_response(error="Missing required fields", status=400)
 
     try:
@@ -74,17 +81,18 @@ def withdraw():
     except (ValueError, TypeError):
         return make_response(error="Invalid amount", status=400)
 
-    wallet = Wallet.query.filter_by(user_id=data["user_id"]).first_or_404()
+    if not current_user.is_admin and "user_id" in data:
+        return make_response(error="Cannot withdraw from other users", status=403)
 
-    # check sufficient balance
+    target_user_id = data.get("user_id", current_user_id)
+    wallet = Wallet.query.filter_by(user_id=target_user_id).first_or_404()
+
     if wallet.balance < amount:
         return make_response(error="Insufficient balance", status=400)
 
     try:
-        # Business Logic: Decrease balance
         wallet.balance -= amount
 
-        # Log Transaction
         new_tx = Transaction(
             wallet_id=wallet.id, amount=amount, transaction_type="WITHDRAWAL"
         )
@@ -106,16 +114,17 @@ def withdraw():
 
 
 @tx_bp.route("/transfer", methods=["POST"])
+@jwt_required()
 def transfer():
     """Transfer money between wallets."""
+    current_user_id = get_jwt_identity()
     data = request.get_json()
 
-    # validation
-    required_fields = ["from_user_id", "to_user_id", "amount"]
+    required_fields = ["to_user_id", "amount"]
     if not data or not all(field in data for field in required_fields):
         return make_response(error="Missing required fields", status=400)
 
-    if data["from_user_id"] == data["to_user_id"]:
+    if data["to_user_id"] == current_user_id:
         return make_response(error="Cannot transfer to same wallet", status=400)
 
     try:
@@ -125,20 +134,16 @@ def transfer():
     except (ValueError, TypeError):
         return make_response(error="Invalid amount", status=400)
 
-    # get both wallets
-    from_wallet = Wallet.query.filter_by(user_id=data["from_user_id"]).first_or_404()
+    from_wallet = Wallet.query.filter_by(user_id=current_user_id).first_or_404()
     to_wallet = Wallet.query.filter_by(user_id=data["to_user_id"]).first_or_404()
 
-    # check sufficient balance
     if from_wallet.balance < amount:
         return make_response(error="Insufficient balance", status=400)
 
     try:
-        # Business Logic: Transfer
         from_wallet.balance -= amount
         to_wallet.balance += amount
 
-        # Log both transactions
         transfer_out = Transaction(
             wallet_id=from_wallet.id, amount=amount, transaction_type="TRANSFER_OUT"
         )
@@ -165,8 +170,15 @@ def transfer():
 
 
 @tx_bp.route("/all", methods=["GET"])
+@jwt_required()
 def get_all_transactions():
-    """Get all transactions globally."""
+    """Get all transactions globally (admin only)."""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+
+    if not current_user.is_admin:
+        return make_response(error="Admin access required", status=403)
+
     tx_type = request.args.get("type")
 
     if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
@@ -195,9 +207,71 @@ def get_all_transactions():
     )
 
 
+@tx_bp.route("/me", methods=["GET"])
+@jwt_required()
+def get_my_transactions():
+    """Get all transactions for current user's wallet."""
+    current_user_id = get_jwt_identity()
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 20, type=int)
+    tx_type = request.args.get("type")
+
+    if page < 1:
+        return make_response(error="Page must be >= 1", status=400)
+    if per_page < 1 or per_page > 100:
+        return make_response(error="per_page must be between 1 and 100", status=400)
+
+    if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
+        return make_response(
+            error=f"Invalid transaction type. Valid types: {', '.join(VALID_TRANSACTION_TYPES)}",
+            status=400,
+        )
+
+    wallet = Wallet.query.filter_by(user_id=current_user_id).first_or_404()
+
+    query = Transaction.query.filter_by(wallet_id=wallet.id)
+    if tx_type:
+        query = query.filter_by(transaction_type=tx_type)
+
+    pagination = query.order_by(Transaction.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return make_response(
+        data={
+            "wallet_id": wallet.id,
+            "current_balance": float(wallet.balance),
+            "transactions": [
+                {
+                    "id": tx.id,
+                    "amount": float(tx.amount),
+                    "type": tx.transaction_type,
+                    "created_at": tx.created_at.isoformat(),
+                }
+                for tx in pagination.items
+            ],
+        },
+        count=len(pagination.items),
+        pagination={
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "total_pages": pagination.pages,
+        },
+        status=200,
+    )
+
+
 @tx_bp.route("/<string:user_id>", methods=["GET"])
+@jwt_required()
 def get_user_transactions(user_id):
     """Get all transactions for a user's wallet."""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+
+    if current_user.id != user_id and not current_user.is_admin:
+        return make_response(error="Unauthorized", status=403)
+
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     tx_type = request.args.get("type")
@@ -249,8 +323,15 @@ def get_user_transactions(user_id):
 
 
 @tx_bp.route("/<string:user_id>/all", methods=["GET"])
+@jwt_required()
 def get_user_all_transactions(user_id):
     """Get all transactions for a user's wallet without pagination."""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+
+    if current_user.id != user_id and not current_user.is_admin:
+        return make_response(error="Unauthorized", status=403)
+
     tx_type = request.args.get("type")
 
     if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
