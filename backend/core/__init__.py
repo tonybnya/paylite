@@ -7,6 +7,7 @@ Author      : @tonybnya
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from config import config_dict
 
 db = SQLAlchemy()
@@ -22,6 +23,13 @@ def create_app(config_name="dev"):
     # bind extensions to the app instance
     db.init_app(app)
     jwt.init_app(app)
+
+    # CORS configuration
+    CORS(
+        app,
+        origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+        supports_credentials=True,
+    )
 
     # register blueprints (the routes)
     from .routes import core_bp
