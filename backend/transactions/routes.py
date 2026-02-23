@@ -8,6 +8,7 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from users.models import Wallet, Transaction, User
 from utils import make_response
+from auth.decorators import admin_required
 from core import db
 from decimal import Decimal
 
@@ -170,15 +171,9 @@ def transfer():
 
 
 @tx_bp.route("/all", methods=["GET"])
-@jwt_required()
+@admin_required
 def get_all_transactions():
     """Get all transactions globally (admin only)."""
-    current_user_id = get_jwt_identity()
-    current_user = User.query.get(current_user_id)
-
-    if not current_user.is_admin:
-        return make_response(error="Admin access required", status=403)
-
     tx_type = request.args.get("type")
 
     if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
