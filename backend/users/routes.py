@@ -16,7 +16,6 @@ users_bp = Blueprint("user", __name__, url_prefix="/users")
 
 
 @users_bp.route("", methods=["POST"])
-@admin_required
 def create_user():
     data = request.get_json()
 
@@ -72,7 +71,7 @@ def create_user():
 
 
 @users_bp.route("", methods=["GET"])
-@jwt_required()
+@admin_required
 def read_users():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
@@ -156,14 +155,8 @@ def update_user(user_id):
 
 
 @users_bp.route("/<string:user_id>", methods=["DELETE"])
-@jwt_required()
+@admin_required
 def delete_user(user_id):
-    current_user_id = get_jwt_identity()
-    current_user = User.query.get(current_user_id)
-
-    if not current_user.is_admin:
-        return make_response(error="Admin access required", status=403)
-
     try:
         user = User.query.get_or_404(user_id)
         db.session.delete(user)
