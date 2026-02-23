@@ -1,0 +1,18 @@
+name: create admin
+method: POST
+url: http://127.0.0.1:5000/users/admin
+body:
+  content: |-
+    {
+      "firstname": "Admin1",
+      "lastname": "User1",
+      "username": "admin1",
+      "email": "admin1@paylite.com",
+      "password": "admin123"
+    }
+  content_type: application/json
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MTg3MTk0NCwianRpIjoiODIwM2FlMDYtOTRjOS00ZGU4LTkzZWUtNjUyNzY5MTFhYTY5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImQwMzQ5YmZmLTExNjktNGZmMC05YmRhLTM3OTFhYTA3NjI2ZSIsIm5iZiI6MTc3MTg3MTk0NCwiY3NyZiI6IjIyNGM5M2NiLTlmN2UtNGVkNC1hYzUxLTFmMWE0YmYxZTczNyIsImV4cCI6MTc3MTg3NTU0NH0.Laj3EMD5xpkoxeNuS9165cKPpfXTCdKEhKIvHUJvcsQ
