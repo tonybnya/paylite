@@ -70,6 +70,60 @@ def create_user():
         return make_response(error=str(e), status=400)
 
 
+@users_bp.route("/admin", methods=["POST"])
+@admin_required
+def create_admin():
+    data = request.get_json()
+
+    required_fields = ["firstname", "lastname", "username", "email", "password"]
+    if not data or not all(field in data for field in required_fields):
+        return make_response(
+            error="Missing required fields: firstname, lastname, username, email, password",
+            status=400,
+        )
+
+    password = data["password"]
+    if len(password) < 8:
+        return make_response(
+            error="Password must be at least 8 characters long", status=400
+        )
+
+    existing_username_user = User.query.filter_by(username=data["username"]).first()
+    if existing_username_user:
+        return make_response(
+            error="Username already exists",
+            status=409,
+        )
+
+    existing_email_user = User.query.filter_by(email=data["email"]).first()
+    if existing_email_user:
+        return make_response(
+            error="Email already exists",
+            status=409,
+        )
+
+    try:
+        new_admin = User(
+            username=data["username"],
+            email=data["email"],
+            firstname=data["firstname"],
+            lastname=data["lastname"],
+            is_admin=True,
+        )
+        new_admin.set_password(password)
+
+        db.session.add(new_admin)
+        db.session.commit()
+
+        return make_response(data=new_admin.to_dict(), status=201)
+    except IntegrityError:
+        db.session.rollback()
+        return make_response(error="Username or email already exists", status=409)
+    except Exception as e:
+        db.session.rollback()
+        return make_response(error=str(e), status=400)
+
+
 @users_bp.route("", methods=["GET"])
 @admin_required
 def read_users():
