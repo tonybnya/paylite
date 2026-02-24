@@ -174,7 +174,14 @@ def transfer():
 @admin_required
 def get_all_transactions():
     """Get all transactions globally (admin only)."""
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 20, type=int)
     tx_type = request.args.get("type")
+
+    if page < 1:
+        return make_response(error="Page must be >= 1", status=400)
+    if per_page < 1 or per_page > 100:
+        return make_response(error="per_page must be between 1 and 100", status=400)
 
     if tx_type and tx_type not in VALID_TRANSACTION_TYPES:
         return make_response(
@@ -186,7 +193,10 @@ def get_all_transactions():
     if tx_type:
         query = query.filter_by(transaction_type=tx_type)
 
-    transactions = query.order_by(Transaction.created_at.desc()).all()
+    pagination = query.order_by(Transaction.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
     return make_response(
         data=[
             {
@@ -196,9 +206,15 @@ def get_all_transactions():
                 "type": tx.transaction_type,
                 "created_at": tx.created_at.isoformat(),
             }
-            for tx in transactions
+            for tx in pagination.items
         ],
-        count=len(transactions),
+        count=len(pagination.items),
+        pagination={
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "total_pages": pagination.pages,
+        },
     )
 
 
