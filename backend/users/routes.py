@@ -55,9 +55,6 @@ def create_user():
         )
         new_user.set_password(password)
 
-        if "is_admin" in data:
-            new_user.is_admin = data["is_admin"]
-
         db.session.add(new_user)
         db.session.commit()
 
@@ -152,7 +149,7 @@ def read_users():
 
 
 @users_bp.route("/all", methods=["GET"])
-@jwt_required()
+@admin_required
 def read_all_users():
     users = User.query.order_by(User.created_at.desc()).all()
     return make_response(data=[user.to_dict() for user in users], count=len(users))
