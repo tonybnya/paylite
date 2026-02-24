@@ -1,13 +1,14 @@
-name: login
+name: withdraw
 method: POST
-url: http://127.0.0.1:5000/auth/login
+url: http://127.0.0.1:5000/transactions/withdraw
 body:
   content: |-
     {
-      "email": "marcoantonio@gmail.com",
-      "password": "p@ss-2026"
+      "amount": 1000
     }
   content_type: application/json
 headers:
 - name: Content-Type
   value: application/json
+- name: Authorization
+  value: Bearer {{token}}

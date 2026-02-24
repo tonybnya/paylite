@@ -1,10 +1,13 @@
-name: login
+name: users
 method: POST
-url: http://127.0.0.1:5000/auth/login
+url: http://127.0.0.1:5000/users
 body:
   content: |-
     {
-      "email": "marcoantonio@gmail.com",
+      "firstname": "Ibrahim",
+      "lastname": "Nsangou",
+      "username": "ibi",
+      "email": "ibins@gmail.com",
       "password": "p@ss-2026"
     }
   content_type: application/json

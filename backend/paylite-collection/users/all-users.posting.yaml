@@ -1,0 +1,8 @@
+name: all users
+method: GET
+url: http://127.0.0.1:5000/users/all
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer {{admin_token}}

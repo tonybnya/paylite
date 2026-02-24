@@ -1,0 +1,8 @@
+name: get wallet by user id
+method: GET
+url: http://127.0.0.1:5000/wallets/{{user_id}}
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer {{token}}

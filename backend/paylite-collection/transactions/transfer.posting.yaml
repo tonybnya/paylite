@@ -1,0 +1,15 @@
+name: transfer
+method: POST
+url: http://127.0.0.1:5000/transactions/transfer
+body:
+  content: |-
+    {
+      "to_user_id": "{{recipient_user_id}}",
+      "amount": 500
+    }
+  content_type: application/json
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer {{token}}

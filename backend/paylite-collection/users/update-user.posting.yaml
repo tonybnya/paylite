@@ -1,0 +1,15 @@
+name: update user
+method: PUT
+url: http://127.0.0.1:5000/users/{{user_id}}
+body:
+  content: |-
+    {
+      "firstname": "UpdatedFirstname",
+      "lastname": "UpdatedLastname"
+    }
+  content_type: application/json
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer {{token}}

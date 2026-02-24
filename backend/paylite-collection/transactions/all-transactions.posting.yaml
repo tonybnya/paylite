@@ -1,0 +1,8 @@
+name: all transactions
+method: GET
+url: http://127.0.0.1:5000/transactions/all
+headers:
+- name: Content-Type
+  value: application/json
+- name: Authorization
+  value: Bearer {{admin_token}}
