@@ -18,7 +18,10 @@ fake = Faker()
 
 def seed_db(count=10):
     """Populates the DB with fake Fintech data."""
-    app = create_app()
+    import os
+
+    config_name = os.environ.get("FLASK_CONFIG", "dev")
+    app = create_app(config_name)
     with app.app_context():
         print(f"🌱 Seeding {count} users...")
 
@@ -154,7 +157,10 @@ def seed_db(count=10):
 
 def init_db():
     """Initializes the database tables."""
-    app = create_app()
+    import os
+
+    config_name = os.environ.get("FLASK_CONFIG", "dev")
+    app = create_app(config_name)
     with app.app_context():
         db.create_all()
     print("✅ Database tables created successfully!")
@@ -162,7 +168,10 @@ def init_db():
 
 def drop_db():
     """Deletes all database tables."""
-    app = create_app()
+    import os
+
+    config_name = os.environ.get("FLASK_CONFIG", "dev")
+    app = create_app(config_name)
     with app.app_context():
         db.drop_all()
     print("⚠️ Database tables dropped.")

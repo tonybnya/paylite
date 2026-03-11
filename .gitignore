@@ -233,3 +233,8 @@ docs/_book
 test/
 
 # End of https://www.toptal.com/developers/gitignore/api/react,vue,angular
+
+AGENTS.md
+AUTH_PR.md
+api-testing.md
+ROADMAP.md

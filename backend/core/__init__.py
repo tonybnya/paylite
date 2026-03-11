@@ -9,12 +9,16 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from config import config_dict
+import os
 
 db = SQLAlchemy()
 jwt = JWTManager()
 
 
-def create_app(config_name="dev"):
+def create_app(config_name=None):
+    if config_name is None:
+        config_name = os.environ.get("FLASK_CONFIG", "dev")
+
     app = Flask(__name__)
 
     # load configuration
