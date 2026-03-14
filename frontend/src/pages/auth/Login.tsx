@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { LoginForm } from "@/components/auth/LoginForm"
 
@@ -24,10 +24,12 @@ export default function Login() {
             <div className="relative z-10 w-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
                 {/* Branding */}
                 <div className="mb-8 text-center flex flex-col items-center">
-                    <div className="w-12 h-12 bg-zinc-900 dark:bg-white rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-zinc-900/10 dark:shadow-white/10">
-                        <span className="text-white dark:text-zinc-900 font-bold text-2xl tracking-tighter">P</span>
-                    </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">PayLite</h1>
+                      <div className="w-12 h-12 bg-zinc-900 dark:bg-white rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-zinc-900/10 dark:shadow-white/10">
+                    <Link to="/">
+                          <span className="text-white dark:text-zinc-900 font-bold text-2xl tracking-tighter">P</span>
+                    </Link> 
+                      </div>
+                      <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">PayLite</h1>
                 </div>
 
                 {/* Form */}
