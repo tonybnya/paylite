@@ -1,6 +1,17 @@
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext"
 import { RegisterForm } from "@/components/auth/RegisterForm"
 
 export default function Register() {
+    const { user, isLoading } = useAuth()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            navigate("/dashboard", { replace: true })
+        }
+    }, [user, isLoading, navigate])
     return (
         <div className="min-h-screen flex items-center justify-center relative bg-white dark:bg-zinc-950 overflow-hidden py-12 px-4">
             {/* Background elements for depth */}

@@ -1,6 +1,11 @@
-import { Link } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
             <div className="text-center space-y-6 max-w-lg">
@@ -10,18 +15,39 @@ export default function Home() {
                 </div>
                 
                 <div className="pt-8 flex flex-wrap gap-4 justify-center">
-                    <Link to="/auth/login" className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-zinc-200 transition-colors">
-                        Login
-                    </Link>
-                    <Link to="/auth/register" className="px-6 py-2.5 bg-zinc-900 border border-zinc-800 text-white font-semibold rounded-full hover:bg-zinc-800 transition-colors">
-                        Register
-                    </Link>
+                    {user ? (
+                        <Button
+                            onClick={() => navigate("/dashboard")}
+                            className="cursor-pointer w-full sm:w-64 h-12 bg-white text-black font-semibold hover:bg-zinc-200 transition-colors"
+                        >
+                            Go to Dashboard
+                        </Button>
+                    ) : (
+                        <>
+                            <Button
+                                onClick={() => navigate("/auth/login")}
+                                className="cursor-pointer flex-1 h-12 bg-white text-black font-semibold hover:bg-zinc-200 transition-colors"
+                            >
+                                Login
+                            </Button>
+                            <Button
+                                onClick={() => navigate("/auth/register")}
+                                className="cursor-pointer flex-1 h-12 bg-zinc-900 border border-zinc-800 text-white font-semibold hover:bg-zinc-800 transition-colors"
+                            >
+                                Register
+                            </Button>
+                        </>
+                    )}
                 </div>
                 
                 <div className="pt-12 text-zinc-600 text-sm flex gap-4 justify-center">
-                    <Link to="/dashboard" className="hover:text-zinc-400">User Dashboard</Link>
-                    <span>&bull;</span>
-                    <Link to="/admin" className="hover:text-zinc-400">Admin Dashboard</Link>
+                    <Link to="/dashboard" className="hover:text-zinc-400">Dashboard</Link>
+                    {user?.is_admin && (
+                        <>
+                            <span>&bull;</span>
+                            <Link to="/admin" className="hover:text-zinc-400">Admin Portal</Link>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

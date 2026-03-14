@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, ShieldAlert, ArrowLeftRight, Wallet, PieChart, Users } from "lucide-react"
+import {LayoutDashboard, ShieldAlert, ArrowLeftRight, Wallet, PieChart, Users, LogOut } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function Sidebar() {
     const location = useLocation()
+    const { user, logout } = useAuth()
 
     const isActive = (path: string) => location.pathname.startsWith(path)
 
@@ -22,7 +24,7 @@ export default function Sidebar() {
         <aside className="hidden md:flex flex-col w-64 border-r border-border bg-card">
             <div className="h-16 flex items-center px-6 border-b border-border">
                 <Link to="/" className="text-xl font-bold tracking-tight text-foreground hover:text-zinc-300 transition-colors">
-                    Paylite
+                    PayLite
                 </Link>
             </div>
 
@@ -47,31 +49,37 @@ export default function Sidebar() {
                     </nav>
                 </div>
 
-                <div className="px-4">
-                    <h2 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Administration</h2>
-                    <nav className="space-y-1">
-                        {adminNav.map((item) => (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                                    isActive(item.href) && item.href !== "/admin" || (item.href === "/admin" && location.pathname === "/admin")
-                                        ? "bg-secondary text-secondary-foreground"
-                                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                                }`}
-                            >
-                                <item.icon className="h-4 w-4" />
-                                {item.title}
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
+                {user?.is_admin && (
+                    <div className="px-4">
+                        <h2 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Administration</h2>
+                        <nav className="space-y-1">
+                            {adminNav.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    to={item.href}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                                        isActive(item.href) && item.href !== "/admin" || (item.href === "/admin" && location.pathname === "/admin")
+                                            ? "bg-secondary text-secondary-foreground"
+                                            : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                                    }`}
+                                >
+                                    <item.icon className="h-4 w-4" />
+                                    {item.title}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
+                )}
             </div>
 
             <div className="p-4 border-t border-border mt-auto">
-                <Link to="/auth/login" className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-md transition-colors">
+                <button 
+                  onClick={() => logout()}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-md transition-colors cursor-pointer"
+                >
+                    <LogOut className="h-4 w-4" />
                     Sign Out
-                </Link>
+                </button>
             </div>
         </aside>
     )

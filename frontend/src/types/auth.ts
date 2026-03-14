@@ -1,11 +1,11 @@
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   firstname: string;
   lastname: string;
   is_active: boolean;
-  role: string;
+  is_admin: boolean;
 }
 
 export interface AuthResponse {

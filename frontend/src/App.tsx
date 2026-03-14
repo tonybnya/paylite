@@ -7,8 +7,10 @@ import Register from "./pages/auth/Register"
 import UserDashboard from "./pages/dashboard/UserDashboard"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 import NotFound from "./pages/NotFound"
+import Unauthorized from "./pages/Unauthorized"
 import Layout from "./components/layout/Layout"
 import { AuthProvider } from "./contexts/AuthContext"
+import { ProtectedRoute } from "./components/auth/ProtectedRoute"
 
 function App() {
     return (
@@ -23,13 +25,23 @@ function App() {
                     <Route path="/auth/login" element={<Login />} />
                     <Route path="/auth/register" element={<Register />} />
 
+                    {/* Unauthorized */}
+                    <Route path="/unauthorized" element={<Unauthorized />} />
+
                     {/* Protected Routes wrapped in Layout */}
-                    <Route element={<Layout />}>
+                    <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                         {/* User Dashboard */}
                         <Route path="/dashboard/*" element={<UserDashboard />} />
 
-                        {/* Admin Dashboard */}
-                        <Route path="/admin/*" element={<AdminDashboard />} />
+                        {/* Admin Dashboard - Restricted to ADMIN role */}
+                        <Route 
+                            path="/admin/*" 
+                            element={
+                                <ProtectedRoute requireAdmin>
+                                    <AdminDashboard />
+                                </ProtectedRoute>
+                            } 
+                        />
                     </Route>
 
                     {/* 404 Not Found */}

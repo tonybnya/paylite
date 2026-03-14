@@ -1,6 +1,11 @@
 import { Bell, Search, Menu } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function Topbar() {
+    const { user } = useAuth()
+
+    const initials = user ? `${user.firstname.charAt(0)}${user.lastname.charAt(0)}`.toUpperCase() : "U"
+
     return (
         <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-30">
             <div className="flex items-center gap-4">
@@ -26,11 +31,11 @@ export default function Topbar() {
                 
                 <div className="flex items-center gap-3 pl-4 border-l border-border">
                     <div className="flex flex-col items-end hidden sm:flex">
-                        <span className="text-sm font-medium leading-none">John Doe</span>
-                        <span className="text-xs text-muted-foreground mt-1">Admin</span>
+                        <span className="text-sm font-medium leading-none">{user?.firstname} {user?.lastname}</span>
+                        <span className="text-xs text-muted-foreground mt-1">{user?.is_admin ? "Admin" : "User"}</span>
                     </div>
-                    <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-                        JD
+                    <div className="h-8 w-8 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs">
+                        {initials}
                     </div>
                 </div>
             </div>
