@@ -5,7 +5,7 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
             <div className="text-center space-y-6 max-w-lg">
                 <div className="space-y-4">
-                    <h1 className="text-5xl font-extrabold tracking-tighter">Paylite</h1>
+                    <h1 className="text-5xl font-extrabold tracking-tighter">PayLite</h1>
                     <p className="text-zinc-400 text-lg">Fintech Dashboard Platform</p>
                 </div>
                 

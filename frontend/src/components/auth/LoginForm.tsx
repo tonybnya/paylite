@@ -1,16 +1,20 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function LoginForm() {
     const navigate = useNavigate()
+    const { login } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -19,18 +23,25 @@ export function LoginForm() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
         setFormData((prev) => ({ ...prev, [id]: value }))
+        if (error) setError(null)
     }
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setError(null)
 
-        // Mock API Call for Phase 2 until Backend is fully integrated
-        setTimeout(() => {
-            console.log("Mock Login Data:", formData)
+        try {
+            await login(formData)
+            toast.success("Welcome back!", {
+                description: "You have successfully signed in.",
+            })
+            navigate("/dashboard")
+        } catch (err: any) {
+            setError(err.response?.data?.error || "Invalid email or password. Please try again.")
+        } finally {
             setIsLoading(false)
-            navigate("/dashboard") // Redirect to dashboard on mock success
-        }, 1500)
+        }
     }
 
     return (
@@ -45,6 +56,12 @@ export function LoginForm() {
             </CardHeader>
             <CardContent>
                 <form onSubmit={onSubmit} className="space-y-6">
+                    {error && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3 rounded-lg flex items-center gap-2 text-sm animate-in fade-in slide-in-from-top-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {error}
+                        </div>
+                    )}
                     <div className="space-y-2">
                         <Label htmlFor="email">Email address</Label>
                         <Input

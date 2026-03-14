@@ -16,7 +16,7 @@ export default function Login() {
                     <div className="w-12 h-12 bg-zinc-900 dark:bg-white rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-zinc-900/10 dark:shadow-white/10">
                         <span className="text-white dark:text-zinc-900 font-bold text-2xl tracking-tighter">P</span>
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Paylite</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">PayLite</h1>
                 </div>
 
                 {/* Form */}

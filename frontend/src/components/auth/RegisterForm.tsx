@@ -1,17 +1,21 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function RegisterForm() {
     const navigate = useNavigate()
+    const { register } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const [formData, setFormData] = useState({
         firstname: "",
         lastname: "",
@@ -24,22 +28,29 @@ export function RegisterForm() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
         setFormData((prev) => ({ ...prev, [id]: value }))
+        if (error) setError(null)
     }
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match")
+            setError("Passwords do not match")
             return
         }
         setIsLoading(true)
+        setError(null)
 
-        // Mock API Call for Phase 2 until Backend is fully integrated
-        setTimeout(() => {
-            console.log("Mock Registration Data:", formData)
+        try {
+            await register(formData)
+            toast.success("Account created successfully!", {
+                description: "You can now sign in with your credentials.",
+            })
+            navigate("/auth/login")
+        } catch (err: any) {
+            setError(err.response?.data?.error || "Registration failed. Please check your details and try again.")
+        } finally {
             setIsLoading(false)
-            navigate("/auth/login") // Redirect to login on mock success
-        }, 1500)
+        }
     }
 
     const inputClasses = "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 focus-visible:border-zinc-300 dark:focus-visible:border-zinc-700 focus-visible:ring-0 transition-all rounded-lg h-11 text-zinc-900 dark:text-zinc-100 autofill:shadow-[0_0_0_1000px_#f9f9fb_inset] dark:autofill:shadow-[0_0_0_1000px_#18181b_inset] [color-scheme:light] dark:[color-scheme:dark]"
@@ -51,11 +62,17 @@ export function RegisterForm() {
                     Create an account
                 </CardTitle>
                 <CardDescription className="text-zinc-500 dark:text-zinc-400">
-                    Join Paylite to start managing your assets
+                    Join PayLite to start managing your assets
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={onSubmit} className="space-y-4">
+                    {error && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3 rounded-lg flex items-center gap-2 text-sm animate-in fade-in slide-in-from-top-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {error}
+                        </div>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="firstname">First name</Label>
