@@ -106,7 +106,7 @@ def seed_db(count=10):
                     )
                     wallet = Wallet(
                         user_id=user.id,
-                        balance=round(random.uniform(500, 5000), 2),
+                        balance=round(random.uniform(50000, 500000), 2),
                         currency="XAF",
                         created_at=wallet_created_at,
                     )
@@ -117,7 +117,7 @@ def seed_db(count=10):
                         tx_type = random.choice(
                             ["DEPOSIT", "WITHDRAWAL", "TRANSFER_OUT", "TRANSFER_IN"]
                         )
-                        amount = round(random.uniform(10, 100), 2)
+                        amount = round(random.uniform(5000, 100000), 2)
                         tx_created_at = fake.date_time_between(
                             start_date=wallet_created_at,
                             end_date="now",

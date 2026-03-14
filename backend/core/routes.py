@@ -12,7 +12,7 @@ core_bp = Blueprint('core', __name__)
 
 @core_bp.route('/', methods=['GET'])
 def index():
-    return {"app": "PayLite API Application Factory"}
+    return {"message": "Welcome to PayLite API Application Factory"}
 
 
 @core_bp.route('/health', methods=['GET'])
