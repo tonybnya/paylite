@@ -31,14 +31,15 @@ export function SendMoneyModal({ open, onOpenChange, onSuccess, currentBalance }
   const [selectedRecipient, setSelectedRecipient] = useState<SearchUser | null>(null)
 
   const methods = useForm<FieldValues>({
+    mode: "all",
     defaultValues: {
       recipientId: "",
-      amount: 0,
+      amount: "", // empty string is better for required validation
     },
   })
 
   // Explicitly destructure to ensure correct typings
-  const { register, handleSubmit, formState: { errors }, setValue, setError, reset, clearErrors } = methods;
+  const { register, handleSubmit, formState: { errors, isValid }, setValue, setError, reset, clearErrors } = methods;
 
   // Debounced search
   useEffect(() => {
@@ -62,17 +63,11 @@ export function SendMoneyModal({ open, onOpenChange, onSuccess, currentBalance }
   }, [searchQuery])
 
   const onSubmit = async (data: FieldValues) => {
-    clearErrors();
-    const amount = Number(data.amount);
+    const amount = parseFloat(data.amount);
     const recipientId = data.recipientId;
 
     if (!recipientId) {
       setError("recipientId", { message: "Please select a recipient" });
-      return;
-    }
-
-    if (isNaN(amount) || amount <= 0) {
-      setError("amount", { message: "Amount must be positive" });
       return;
     }
 
@@ -136,7 +131,7 @@ export function SendMoneyModal({ open, onOpenChange, onSuccess, currentBalance }
                     key={user.id}
                     onClick={() => {
                       setSelectedRecipient(user)
-                      setValue("recipientId", user.id)
+                      setValue("recipientId", user.id, { shouldValidate: true })
                     }}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-zinc-800 transition-colors text-left border-b border-zinc-800/50 last:border-0"
                   >
@@ -168,7 +163,7 @@ export function SendMoneyModal({ open, onOpenChange, onSuccess, currentBalance }
                   size="xs" 
                   onClick={() => {
                     setSelectedRecipient(null)
-                    setValue("recipientId", "")
+                    setValue("recipientId", "", { shouldValidate: true })
                   }}
                   className="text-zinc-500 hover:text-white hover:bg-zinc-800 h-7"
                 >
@@ -186,10 +181,22 @@ export function SendMoneyModal({ open, onOpenChange, onSuccess, currentBalance }
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-medium">$</span>
                   <Input
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0.00"
-                    {...register("amount")}
+                    {...register("amount", {
+                      validate: (val) => {
+                        const strVal = String(val).trim();
+                        if (!strVal) return "Amount is required"
+                        
+                        // Regex: optional decimal, positive only
+                        if (!/^\d*\.?\d+$/.test(strVal)) return "Invalid amount"
+                        
+                        const num = parseFloat(strVal);
+                        if (num <= 0) return "Amount must be positive"
+                        return true
+                      }
+                    })}
                     className="pl-7 h-12 text-lg font-bold bg-zinc-900 border-zinc-800 focus:ring-zinc-700"
                   />
                 </div>
@@ -203,7 +210,7 @@ export function SendMoneyModal({ open, onOpenChange, onSuccess, currentBalance }
 
               <Button
                 type="submit"
-                disabled={isSubmitting || !selectedRecipient}
+                disabled={isSubmitting || !selectedRecipient || !isValid}
                 className="w-full h-12 bg-white text-black hover:bg-zinc-200 font-bold transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
               >
                 {isSubmitting ? (
