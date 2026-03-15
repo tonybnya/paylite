@@ -23,6 +23,9 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          # Use git subtree to push only the backend folder
-          # Replace <USERNAME> and <SPACE_NAME> with your actual HF info in the command below or via env vars
-          git subtree push --prefix backend https://tonybnya:$HF_TOKEN@huggingface.co/spaces/tonybnya/paylite-backend main
+          # 1. Create a temporary branch containing only the backend folder
+          git subtree split --prefix backend -b deploy-branch
+          
+          # 2. Force push the temporary branch to Hugging Face
+          # This ensures that even if Hugging Face has a default README.md, our code overwrites it.
+          git push https://tonybnya:$HF_TOKEN@huggingface.co/spaces/tonybnya/paylite-backend deploy-branch:main --force
