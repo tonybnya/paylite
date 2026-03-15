@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { walletService } from "@/services/wallet.service"
 import { transactionService } from "@/services/transaction.service"
 import { Wallet } from "@/types/wallet"
@@ -7,6 +7,7 @@ import { WalletCard, WalletSkeleton } from "@/components/dashboard/WalletCard"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
 import { useNavigate } from "react-router-dom"
+import { isAfter, subDays, parseISO } from "date-fns"
 import { 
   ArrowUpRightIcon, 
   ArrowDownLeftIcon, 
@@ -19,7 +20,7 @@ export default function Overview() {
     const { user } = useAuth()
     const navigate = useNavigate()
     const [wallet, setWallet] = useState<Wallet | null>(null)
-    const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([])
+    const [transactions, setTransactions] = useState<Transaction[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchData = async () => {
@@ -27,10 +28,10 @@ export default function Overview() {
             setIsLoading(true)
             const [walletRes, txRes] = await Promise.all([
                 walletService.getMyWallet(),
-                transactionService.getMyTransactions({ per_page: 3 })
+                transactionService.getMyTransactions({ per_page: 20 }) // Fetch enough for preview and mini-stats
             ])
             setWallet(walletRes.data)
-            setRecentTransactions(txRes.transactions || [])
+            setTransactions(txRes.transactions || [])
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error)
             toast.error("Failed to load dashboard overview")
@@ -42,6 +43,37 @@ export default function Overview() {
     useEffect(() => {
         fetchData()
     }, [])
+
+    // --- Live Analytics Aggregation ---
+    const stats = useMemo(() => {
+        if (!transactions.length) return { weeklySpent: 0, savingsRate: 0, spendingPercent: 0 };
+
+        const sevenDaysAgo = subDays(new Date(), 7);
+        let weeklySpent = 0;
+        let totalRevenue = 0;
+        let totalSpending = 0;
+
+        transactions.forEach(tx => {
+            const txDate = parseISO(tx.created_at);
+            const amount = Math.abs(tx.amount);
+
+            if (tx.type === 'DEPOSIT' || tx.type === 'TRANSFER_IN') {
+                totalRevenue += amount;
+            } else {
+                totalSpending += amount;
+                if (isAfter(txDate, sevenDaysAgo)) {
+                    weeklySpent += amount;
+                }
+            }
+        });
+
+        const savingsRate = totalRevenue > 0 ? ((totalRevenue - totalSpending) / totalRevenue) * 100 : 0;
+        const spendingPercent = totalRevenue > 0 ? (totalSpending / totalRevenue) * 100 : 0;
+
+        return { weeklySpent, savingsRate, spendingPercent };
+    }, [transactions]);
+
+    const recentTransactions = transactions.slice(0, 3);
 
     return (
         <div className="space-y-8 pb-10">
@@ -155,21 +187,30 @@ export default function Overview() {
                         <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
                             <div className="flex justify-between items-end mb-2">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Weekly Spent</p>
-                                <p className="text-lg font-bold text-foreground">FCFA 45k</p>
+                                <p className="text-lg font-bold text-foreground">
+                                    ${stats.weeklySpent.toLocaleString()}
+                                </p>
                             </div>
                             <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
-                                <div className="bg-emerald-500 h-full w-[65%]" />
+                                <div 
+                                    className="bg-emerald-500 h-full transition-all duration-500" 
+                                    style={{ width: `${Math.min(stats.spendingPercent, 100)}%` }}
+                                />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-3 rounded-lg border border-border/50 bg-muted/10">
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Savings</p>
-                                <p className="text-sm font-bold text-emerald-500">+12%</p>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Savings Rate</p>
+                                <p className={`text-sm font-bold ${stats.savingsRate >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    {stats.savingsRate >= 0 ? '+' : ''}{stats.savingsRate.toFixed(1)}%
+                                </p>
                             </div>
                             <div className="p-3 rounded-lg border border-border/50 bg-muted/10">
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Growth</p>
-                                <p className="text-sm font-bold text-blue-500">+8.5%</p>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Balance</p>
+                                <p className="text-sm font-bold text-blue-500">
+                                    ${wallet?.balance.toLocaleString() || "0"}
+                                </p>
                             </div>
                         </div>
                     </div>
