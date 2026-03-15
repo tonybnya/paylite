@@ -148,6 +148,32 @@ def read_users():
     )
 
 
+@users_bp.route("/search", methods=["GET"])
+@jwt_required()
+def search_users():
+    query_str = request.args.get("q", "")
+    if len(query_str) < 3:
+        return make_response(data=[], count=0)
+    
+    users = User.query.filter(
+        (User.username.ilike(f"%{query_str}%")) | 
+        (User.email.ilike(f"%{query_str}%")) |
+        (User.firstname.ilike(f"%{query_str}%")) |
+        (User.lastname.ilike(f"%{query_str}%"))
+    ).limit(10).all()
+    
+    return make_response(
+        data=[{
+            "id": user.id,
+            "username": user.username,
+            "firstname": user.firstname,
+            "lastname": user.lastname,
+            "email": user.email
+        } for user in users],
+        count=len(users)
+    )
+
+
 @users_bp.route("/all", methods=["GET"])
 @admin_required
 def read_all_users():
