@@ -14,6 +14,12 @@ migrate_db.py
 reset_db.py
 test_db.py
 
+AGENTS.md
+AUTH_PR.md
+api-testing.md
+ROADMAP.md
+deployment.md
+
 ### Flask.Python Stack ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -240,8 +246,3 @@ docs/_book
 test/
 
 # End of https://www.toptal.com/developers/gitignore/api/react,vue,angular
-
-AGENTS.md
-AUTH_PR.md
-api-testing.md
-ROADMAP.md
