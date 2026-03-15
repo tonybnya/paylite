@@ -1,3 +1,9 @@
+"""
+Script Name : test_db.py
+Description : Quick script to verify database connection string
+Author      : @tonybnya
+"""
+
 import os
 
 from sqlalchemy import create_engine

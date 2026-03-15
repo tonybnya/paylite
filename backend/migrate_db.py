@@ -1,3 +1,9 @@
+"""
+Script Name : migrate_db.py
+Description : Data migration script from SQLite (local) to PostgreSQL (Neon)
+Author      : @tonybnya
+"""
+
 import os
 import sqlite3
 from datetime import datetime, timezone

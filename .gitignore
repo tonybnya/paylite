@@ -7,6 +7,13 @@ instance/*
 .webassets-cache
 .env
 
+# temporary verification scripts
+check_conn.py
+manage.py
+migrate_db.py
+reset_db.py
+test_db.py
+
 ### Flask.Python Stack ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
