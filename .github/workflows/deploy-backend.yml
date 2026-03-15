@@ -1,0 +1,28 @@
+name: Sync to Hugging Face Hub
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Configure Git
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          # Use git subtree to push only the backend folder
+          # Replace <USERNAME> and <SPACE_NAME> with your actual HF info in the command below or via env vars
+          git subtree push --prefix backend https://tonybnya:$HF_TOKEN@huggingface.co/spaces/tonybnya/paylite-backend main
