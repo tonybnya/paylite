@@ -14,11 +14,11 @@ migrate_db.py
 reset_db.py
 test_db.py
 
-AGENTS.md
-AUTH_PR.md
-api-testing.md
-ROADMAP.md
-deployment.md
+# AGENTS.md
+# AUTH_PR.md
+# api-testing.md
+# ROADMAP.md
+# deployment.md
 
 ### Flask.Python Stack ###
 # Byte-compiled / optimized / DLL files
