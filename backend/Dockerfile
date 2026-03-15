@@ -21,8 +21,8 @@ ENV FLASK_DEBUG=0
 ENV JWT_ACCESS_TOKEN_EXPIRES=3600
 ENV PYTHONUNBUFFERED=1
 
-# Expose the port Koyeb uses
-EXPOSE 8000
+# Expose the port Hugging Face Spaces uses
+EXPOSE 7860
 
 # Run the application with Gunicorn
-CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:8000", "run:app"]
+CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:7860", "run:app"]
