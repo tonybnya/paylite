@@ -12,4 +12,9 @@ export const transactionService = {
     const response = await api.get(`/users/search?q=${encodeURIComponent(query)}`);
     return response.data.data;
   },
+
+  async getMyTransactions(params?: { type?: string; page?: number; per_page?: number }): Promise<any> {
+    const response = await api.get("/transactions/me", { params });
+    return response.data.data;
+  },
 };

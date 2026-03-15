@@ -5,7 +5,7 @@ import { WalletCard, WalletSkeleton } from "@/components/dashboard/WalletCard"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
 
-export default function UserDashboard() {
+export default function Overview() {
     const { user } = useAuth()
     const [wallet, setWallet] = useState<Wallet | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -32,7 +32,7 @@ export default function UserDashboard() {
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
                 <p className="text-zinc-400">
-                    Welcome back, <span className="text-black font-medium">{user?.firstname || "User"}</span>. Here's what's happening with your account.
+                    Welcome back, <span className="text-white font-medium">{user?.firstname || "User"}</span>. Here's what's happening with your account.
                 </p>
             </div>
 
@@ -47,17 +47,17 @@ export default function UserDashboard() {
                     </div>
                 )}
 
-                {/* Placeholders for future Phase 3 features */}
-                <div className="hidden lg:block p-6 rounded-xl border border-zinc-800 bg-zinc-950/30 flex flex-col justify-center">
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Upcoming</p>
-                    <h3 className="text-sm font-medium text-zinc-300">Transaction History</h3>
-                    <p className="text-xs text-zinc-600 mt-1">Detailed list and export coming soon.</p>
+                {/* Status Cards */}
+                <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-950/30 flex flex-col justify-center">
+                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Transactions</p>
+                    <h3 className="text-sm font-medium text-zinc-300">Recent Activity</h3>
+                    <p className="text-xs text-zinc-600 mt-1">Check your transaction history for more details.</p>
                 </div>
                 
-                <div className="hidden md:block p-6 rounded-xl border border-zinc-800 bg-zinc-950/30 flex flex-col justify-center">
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Upcoming</p>
-                    <h3 className="text-sm font-medium text-zinc-300">Analytics</h3>
-                    <p className="text-xs text-zinc-600 mt-1">Spending charts and revenue tracks.</p>
+                <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-950/30 flex flex-col justify-center">
+                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Analytics</p>
+                    <h3 className="text-sm font-medium text-zinc-300">Spending Overview</h3>
+                    <p className="text-xs text-zinc-600 mt-1">Visit analytics to see your spending patterns.</p>
                 </div>
             </div>
         </div>

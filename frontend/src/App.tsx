@@ -4,7 +4,10 @@ import { Toaster } from "sonner"
 import Home from "./pages/Home"
 import Login from "./pages/auth/Login"
 import Register from "./pages/auth/Register"
-import UserDashboard from "./pages/dashboard/UserDashboard"
+import Overview from "./pages/dashboard/Overview"
+import Transactions from "./pages/dashboard/Transactions"
+import WalletPage from "./pages/dashboard/Wallet"
+import Analytics from "./pages/dashboard/Analytics"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 import NotFound from "./pages/NotFound"
 import Unauthorized from "./pages/Unauthorized"
@@ -31,7 +34,10 @@ function App() {
                     {/* Protected Routes wrapped in Layout */}
                     <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                         {/* User Dashboard */}
-                        <Route path="/dashboard/*" element={<UserDashboard />} />
+                        <Route path="/dashboard" element={<Overview />} />
+                        <Route path="/dashboard/transactions" element={<Transactions />} />
+                        <Route path="/dashboard/wallet" element={<WalletPage />} />
+                        <Route path="/dashboard/analytics" element={<Analytics />} />
 
                         {/* Admin Dashboard - Restricted to ADMIN role */}
                         <Route 
