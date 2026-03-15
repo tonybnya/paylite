@@ -14,6 +14,8 @@ import {
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { downloadAsCSV } from "@/lib/export"
+import { format } from "date-fns"
 import {
   Select,
   SelectContent,
@@ -95,7 +97,22 @@ export default function Transactions() {
                     <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
                     <p className="text-muted-foreground">View and manage your transaction history.</p>
                 </div>
-                <Button variant="outline" className="h-10 px-4 cursor-pointer">
+                <Button 
+                    variant="outline" 
+                    className="h-10 px-4 cursor-pointer"
+                    onClick={() => {
+                        const exportData = filteredTransactions.map(tx => ({
+                            ID: tx.id,
+                            Date: format(new Date(tx.created_at), 'yyyy-MM-dd HH:mm'),
+                            Type: tx.type.replace('_', ' '),
+                            Amount: tx.amount,
+                            Status: 'COMPLETED'
+                        }));
+                        downloadAsCSV(exportData, `transactions_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+                        toast.success("CSV Export started");
+                    }}
+                    disabled={filteredTransactions.length === 0}
+                >
                     <DownloadIcon className="mr-2 size-4" />
                     Export CSV
                 </Button>
