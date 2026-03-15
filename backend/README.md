@@ -1,3 +1,12 @@
+---
+title: PayLite Backend
+emoji: 💰
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # PayLite API
 
 This Digital Wallet & Transaction System is widely inspired by fintech requirements like atomic transactions, authentication, and auditability.
