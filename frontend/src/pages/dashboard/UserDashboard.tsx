@@ -10,20 +10,20 @@ export default function UserDashboard() {
     const [wallet, setWallet] = useState<Wallet | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        const fetchWallet = async () => {
-            try {
-                setIsLoading(true)
-                const response = await walletService.getMyWallet()
-                setWallet(response.data)
-            } catch (error) {
-                console.error("Failed to fetch wallet:", error)
-                toast.error("Failed to load wallet balance")
-            } finally {
-                setIsLoading(false)
-            }
+    const fetchWallet = async () => {
+        try {
+            setIsLoading(true)
+            const response = await walletService.getMyWallet()
+            setWallet(response.data)
+        } catch (error) {
+            console.error("Failed to fetch wallet:", error)
+            toast.error("Failed to load wallet balance")
+        } finally {
+            setIsLoading(false)
         }
+    }
 
+    useEffect(() => {
         fetchWallet()
     }, [])
 
@@ -40,7 +40,7 @@ export default function UserDashboard() {
                 {isLoading ? (
                     <WalletSkeleton />
                 ) : wallet ? (
-                    <WalletCard wallet={wallet} />
+                    <WalletCard wallet={wallet} onRefresh={fetchWallet} />
                 ) : (
                     <div className="flex items-center justify-center p-8 border border-dashed border-zinc-800 rounded-xl bg-zinc-950/50">
                         <p className="text-zinc-500 text-sm">Failed to load wallet data.</p>
