@@ -42,7 +42,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-                    <Link to="/" className="text-xl font-bold tracking-tight text-foreground hover:text-zinc-300 transition-colors">
+                    <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground hover:text-zinc-300 transition-colors">
+                        <img src="/logo.svg" alt="Logo" className="w-8 h-8 [!filter:invert(1)]" />
                         PayLite
                     </Link>
                     <button 
