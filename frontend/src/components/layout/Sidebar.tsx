@@ -1,8 +1,14 @@
 import { Link, useLocation } from "react-router-dom"
-import {LayoutDashboard, ShieldAlert, ArrowLeftRight, Wallet, PieChart, Users, LogOut } from "lucide-react"
+import {LayoutDashboard, ShieldAlert, ArrowLeftRight, Wallet, PieChart, Users, LogOut, X } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+import { cn } from "@/lib/utils"
 
-export default function Sidebar() {
+interface SidebarProps {
+    isOpen?: boolean
+    onClose?: () => void
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const location = useLocation()
     const { user, logout } = useAuth()
 
@@ -21,47 +27,47 @@ export default function Sidebar() {
     ]
 
     return (
-        <aside className="hidden md:flex flex-col w-64 border-r border-border bg-card">
-            <div className="h-16 flex items-center px-6 border-b border-border">
-                <Link to="/" className="text-xl font-bold tracking-tight text-foreground hover:text-zinc-300 transition-colors">
-                    PayLite
-                </Link>
-            </div>
+        <>
+            {/* Mobile Backdrop */}
+            <div 
+                className={cn(
+                    "fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300",
+                    isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                )}
+                onClick={onClose}
+            />
 
-            <div className="flex-1 overflow-y-auto py-4">
-                <div className="px-4 mb-6">
-                    <h2 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Main Menu</h2>
-                    <nav className="space-y-1">
-                        {mainNav.map((item) => (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                                    isActive(item.href) && item.href !== "/dashboard" || (item.href === "/dashboard" && location.pathname === "/dashboard")
-                                        ? "bg-secondary text-secondary-foreground"
-                                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                                }`}
-                            >
-                                <item.icon className="h-4 w-4" />
-                                {item.title}
-                            </Link>
-                        ))}
-                    </nav>
+            <aside className={cn(
+                "fixed inset-y-0 left-0 z-50 flex flex-col w-64 border-r border-border bg-card transition-transform duration-300 ease-in-out md:static md:translate-x-0",
+                isOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
+                <div className="h-16 flex items-center justify-between px-6 border-b border-border">
+                    <Link to="/" className="text-xl font-bold tracking-tight text-foreground hover:text-zinc-300 transition-colors">
+                        PayLite
+                    </Link>
+                    <button 
+                        onClick={onClose}
+                        className="p-2 text-muted-foreground hover:text-foreground md:hidden"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
                 </div>
 
-                {user?.is_admin && (
-                    <div className="px-4">
-                        <h2 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Administration</h2>
+                <div className="flex-1 overflow-y-auto py-4">
+                    <div className="px-4 mb-6">
+                        <h2 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Main Menu</h2>
                         <nav className="space-y-1">
-                            {adminNav.map((item) => (
+                            {mainNav.map((item) => (
                                 <Link
                                     key={item.href}
                                     to={item.href}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                                        isActive(item.href) && item.href !== "/admin" || (item.href === "/admin" && location.pathname === "/admin")
+                                    onClick={onClose}
+                                    className={cn(
+                                        "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                                        (isActive(item.href) && item.href !== "/dashboard") || (item.href === "/dashboard" && location.pathname === "/dashboard")
                                             ? "bg-secondary text-secondary-foreground"
                                             : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                                    }`}
+                                    )}
                                 >
                                     <item.icon className="h-4 w-4" />
                                     {item.title}
@@ -69,18 +75,42 @@ export default function Sidebar() {
                             ))}
                         </nav>
                     </div>
-                )}
-            </div>
 
-            <div className="p-4 border-t border-border mt-auto">
-                <button 
-                  onClick={() => logout()}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-md transition-colors cursor-pointer"
-                >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                </button>
-            </div>
-        </aside>
+                    {user?.is_admin && (
+                        <div className="px-4">
+                            <h2 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Administration</h2>
+                            <nav className="space-y-1">
+                                {adminNav.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        to={item.href}
+                                        onClick={onClose}
+                                        className={cn(
+                                            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                                            (isActive(item.href) && item.href !== "/admin") || (item.href === "/admin" && location.pathname === "/admin")
+                                                ? "bg-secondary text-secondary-foreground"
+                                                : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                                        )}
+                                    >
+                                        <item.icon className="h-4 w-4" />
+                                        {item.title}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-4 border-t border-border mt-auto">
+                    <button 
+                      onClick={() => logout()}
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-md transition-colors cursor-pointer"
+                    >
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                    </button>
+                </div>
+            </aside>
+        </>
     )
 }
