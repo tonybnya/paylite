@@ -15,7 +15,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             <div className="flex items-center gap-4">
                 <button 
                     onClick={onMenuClick}
-                    className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-md transition-colors"
+                    className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-md transition-colors cursor-pointer"
                 >
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Toggle Sidebar</span>

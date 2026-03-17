@@ -47,7 +47,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     </Link>
                     <button 
                         onClick={onClose}
-                        className="p-2 text-muted-foreground hover:text-foreground md:hidden"
+                        className="p-2 text-muted-foreground hover:text-foreground md:hidden cursor-pointer"
                     >
                         <X className="h-5 w-5" />
                     </button>
