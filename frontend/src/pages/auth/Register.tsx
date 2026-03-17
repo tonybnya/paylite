@@ -26,7 +26,8 @@ export default function Register() {
                 <div className="mb-8 text-center flex flex-col items-center">
                     <div className="w-12 h-12 bg-zinc-900 dark:bg-white rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-zinc-900/10 dark:shadow-white/10">
                       <Link to="/">
-                        <span className="text-white dark:text-zinc-900 font-bold text-2xl tracking-tighter">P</span>
+                        {/* <span className="text-white dark:text-zinc-900 font-bold text-2xl tracking-tighter">P</span> */}
+                        <img src="/logo.svg" alt="Logo" className="w-8 h-8 brightness-0 invert dark:brightness-0" />
                       </Link> 
                     </div>
                     <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">PayLite</h1>
