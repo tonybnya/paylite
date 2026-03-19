@@ -12,13 +12,18 @@ core_bp = Blueprint('core', __name__)
 
 @core_bp.route('/', methods=['GET'])
 def index():
-    return {"message": "Welcome to PayLite API Application Factory"}
+    return {
+        "name": "PayLite API",
+        "version": "1.0.0",
+        "status": "running",
+        "url": "https://tonybnya-paylite-backend.hf.space"
+    }, 200
 
 
 @core_bp.route('/health', methods=['GET'])
 def health_check():
     return {
-        "status": "ok",
+        "status": "healthy",
         "service": "PayLite API",
         "timestamp": datetime.now()
     }, 200
